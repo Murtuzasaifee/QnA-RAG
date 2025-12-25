@@ -1,0 +1,53 @@
+# QnA RAG - Main Configuration
+# Environment variables are loaded using ${oc.env:VAR_NAME} syntax
+# You can override any value at runtime or via command line
+
+# Application Info
+app_name: "QnA RAG"
+app_version: "0.1.0"
+
+# OpenAI Configuration
+openai:
+  api_key: ${oc.env:OPENAI_API_KEY}
+
+# Qdrant Cloud Configuration
+qdrant:
+  url: ${oc.env:QDRANT_URL}
+  api_key: ${oc.env:QDRANT_API_KEY}
+
+# Collection Settings
+collection:
+  name: ${oc.env:COLLECTION_NAME,qna_rag_documents}
+
+# Document Processing Settings
+document_processing:
+  chunk_size: 1000
+  chunk_overlap: 200
+
+# Model Configuration
+model:
+  embedding_model: "text-embedding-3-small"
+  llm_model: "gpt-4o-mini"
+  llm_temperature: 0.0
+
+# Retrieval Settings
+retrieval:
+  k: 4
+
+# Logging Configuration
+logging:
+  level: "INFO"
+
+# RAGAS Evaluation Settings
+ragas:
+  enable_evaluation: true
+  timeout_seconds: 30.0
+  log_results: true
+  llm_model: null  # Defaults to model.llm_model if not set
+  llm_temperature: null  # Defaults to model.llm_temperature if not set
+  embedding_model: null  # Defaults to model.embedding_model if not set
+
+# API Settings
+api:
+  host: "0.0.0.0"
+  port: 8000
