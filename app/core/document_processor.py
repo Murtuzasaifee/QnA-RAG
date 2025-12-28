@@ -12,7 +12,6 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.utils.logger import get_logger
-import hydra
 from omegaconf import DictConfig
 
 logger = get_logger(__name__)

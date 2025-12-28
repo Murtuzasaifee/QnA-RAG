@@ -18,6 +18,7 @@ qdrant:
 # Collection Settings
 collection:
   name: ${oc.env:COLLECTION_NAME,qna_rag_documents}
+  embedding_dimension: 1536
 
 # Document Processing Settings
 document_processing:
