@@ -16,8 +16,8 @@ def main(cfg: DictConfig):
 
     setup_logging(log_level=cfg.logging.level)
 
-    # document_processor = DocumentProcessor(cfg)
-    # documents = document_processor.process_file("test.pdf")
+    document_processor = DocumentProcessor(cfg)
+    documents = document_processor.process_file("app/resources/test.pdf")
 
     # vector_store_service = VectorStoreService(cfg)
     # vector_store_service.add_documents(documents=documents)
@@ -29,12 +29,13 @@ def main(cfg: DictConfig):
     # print(vector_store_service.get_collection_info())
     # print(vector_store_service.health_check())
 
-    rag_chain = RagChain(cfg)
+    # rag_chain = RagChain(cfg)
     # answer = rag_chain.run("What is Muli Headed Attention?")
     # print(answer)
 
     # answer_with_sources = rag_chain.run_with_sources("What is Docling?")
     # print(answer_with_sources)
+
 
 
 @with_config
@@ -53,5 +54,5 @@ async def amain(cfg: DictConfig):
 
 
 if __name__ == "__main__":
-    # main()
-    asyncio.run(amain())
+    main()
+    # asyncio.run(amain())

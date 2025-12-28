@@ -190,3 +190,24 @@ class RagChain:
         except Exception as e:
             logger.error(f"Error processing query: {e}")
             raise   
+
+    
+    def stream(self, query: str):
+        """Stream RAG response.
+
+        Args:
+            question: User question
+
+        Yields:
+            Response chunks
+        """
+        logger.info(f"Streaming query: {query[:100]}...")
+
+        try:
+            for chunk in self.chain.stream(query):
+                yield chunk
+        except Exception as e:
+            logger.error(f"Error streaming query: {e}")
+            raise
+            
+
