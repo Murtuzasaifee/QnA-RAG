@@ -4,6 +4,7 @@ from app.utils.config_utils import with_config, print_config
 from app.utils.logger import setup_logging
 from app.core.vector_store import VectorStoreService
 from app.core.rag_chain import RagChain
+import asyncio  
 
 from dotenv import load_dotenv
 
@@ -32,9 +33,25 @@ def main(cfg: DictConfig):
     # answer = rag_chain.run("What is Muli Headed Attention?")
     # print(answer)
 
-    answer_with_sources = rag_chain.run_with_sources("What is Docling?")
-    print(answer_with_sources)
+    # answer_with_sources = rag_chain.run_with_sources("What is Docling?")
+    # print(answer_with_sources)
+
+
+@with_config
+async def amain(cfg: DictConfig):
+    print_config(cfg)
+
+    setup_logging(log_level=cfg.logging.level)
+
+    rag_chain = RagChain(cfg)
+
+    # answer = await rag_chain.arun("What is Muli Headed Attention?")
+    # print(answer)
+
+    answer = await rag_chain.arun_with_sources("What is Muli Headed Attention?")
+    print(answer)
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    asyncio.run(amain())

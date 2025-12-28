@@ -134,3 +134,59 @@ class RagChain:
             logger.error(f"Error processing query: {e}")
             raise   
             
+    async def arun(self, query: str) -> str:
+        """Run the RAG chain.
+
+        Args:
+            query: Query string
+
+        Returns:
+            Answer string
+        """
+
+        try:
+            answer = await self.chain.ainvoke(query)
+            logger.info("Query processed successfully")
+            return answer
+        except Exception as e:
+            logger.error(f"Error processing query: {e}")
+            raise
+
+    
+    async def arun_with_sources(self, query: str) -> dict:
+        """Execute a RAG query and return sources.
+
+        Args:
+            question: User question
+
+        Returns:
+            Dictionary with answer and source documents
+        """
+
+        try:
+            answer = await self.chain.ainvoke(query)
+
+            source_docs = await self.retriever.ainvoke(query)
+
+            sources = [
+                {
+                    "content": (
+                        doc.page_content[:500] + "..."
+                        if len(doc.page_content) > 500
+                        else doc.page_content
+                    ),
+                    "metadata": doc.metadata
+                }
+                for doc in source_docs
+            ]
+
+            logger.info(f"Query processed successfully with {len(sources)} sources")
+
+            return {
+                "answer": answer,
+                "sources": sources
+            }
+
+        except Exception as e:
+            logger.error(f"Error processing query: {e}")
+            raise   
