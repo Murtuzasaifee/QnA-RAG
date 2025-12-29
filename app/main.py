@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from app import __version__
-from app.api.routes import health, documents
+from app.api.routes import health, documents, query
 from omegaconf import DictConfig
 from app.utils.logger import get_logger, setup_logging
 from app.utils.config_utils import with_config
@@ -75,6 +75,7 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(documents.router)
+app.include_router(query.router)
 
 @app.get("/", tags=["Root"])
 async def root():
