@@ -14,6 +14,7 @@ from app.dto.query_schema import (
     QueryResponse,
     SourceDocument
 )
+from app.dto.evaluation_scores import EvaluationScores
 from app.core.vector_store import VectorStoreService
 from app.core.rag_chain import RagChain
 from app.utils.logger import get_logger
@@ -36,7 +37,7 @@ async def query(request: QueryRequest,  cfg: DictConfig = Depends(get_cfg)) -> Q
     """Process a RAG query."""
     logger.info(
         f"Query received: {request.question[:100]}... "
-        f"(sources={request.include_sources}, eval={request.enable_evaluation})"
+        f"(sources={request.include_sources}, eval={request.enable_evaluation})",
     )
 
     start_time = time.time()
@@ -44,7 +45,29 @@ async def query(request: QueryRequest,  cfg: DictConfig = Depends(get_cfg)) -> Q
     try:
         rag_chain = RagChain(cfg=cfg)
 
-        if request.include_sources:
+        if request.enable_evaluation:
+            # Evaluation requires sources, so we always include them
+            result = await rag_chain.arun_with_evaluation(
+                question=request.question,
+                include_sources=request.include_sources,
+            )
+
+            sources = (
+                [
+                    SourceDocument(
+                        content=source["content"],
+                        metadata=source["metadata"],
+                    )
+                    for source in result["sources"]
+                ]
+                if request.include_sources
+                else None
+            )
+
+            answer = result["answer"]
+            evaluation = EvaluationScores(**result["evaluation"])
+
+        elif request.include_sources:
             result = await rag_chain.arun_with_sources(request.question)
             sources = [
                 SourceDocument(
@@ -70,7 +93,9 @@ async def query(request: QueryRequest,  cfg: DictConfig = Depends(get_cfg)) -> Q
             question=request.question,
             answer=answer,
             sources=sources,
-            processing_time_ms=round(processing_time, 2)
+            processing_time_ms=round(processing_time, 2),
+            evaluation=evaluation,
+
         )
 
     except Exception as e:

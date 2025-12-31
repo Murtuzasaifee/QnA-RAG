@@ -3,6 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.dto.evaluation_scores import EvaluationScores
+
 
 class QueryRequest(BaseModel):
 
@@ -27,6 +29,8 @@ class QueryRequest(BaseModel):
                 {
                     "question": "What is RAG?",
                     "include_sources": True,
+                    "enable_evaluation": False,
+
                 }
             ]
         }
@@ -52,5 +56,9 @@ class QueryResponse(BaseModel):
     processing_time_ms: float = Field(
         ...,
         description="Query processing time in milliseconds",
+    )
+    evaluation: EvaluationScores | None = Field(
+        None,
+        description="RAGAS evaluation scores (if requested)",
     )
     

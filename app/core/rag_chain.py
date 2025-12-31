@@ -6,6 +6,9 @@ from langchain_core.runnables import RunnablePassthrough
 
 
 from app.core.vector_store import VectorStoreService
+from app.core.rag_evalutator import RAGEvaluator
+
+from app.core.rag_evalutator import evaluate
 from app.utils.logger import get_logger
 from omegaconf import DictConfig
 
@@ -54,6 +57,7 @@ class RagChain:
         self.cfg = cfg
         self.vector_store_service = vector_store_service or VectorStoreService(cfg)
         self.retriever = self.vector_store_service.get_retriever()
+        self.evaluator = RAGEvaluator(cfg=cfg)
 
         self.llm = ChatOpenAI(
             model_name=cfg.model.llm_model,
@@ -190,6 +194,54 @@ class RagChain:
         except Exception as e:
             logger.error(f"Error processing query: {e}")
             raise   
+
+
+    async def arun_with_evaluation(self, question: str, include_sources: bool = True) -> dict:
+        """Execute async RAG query with RAGAS evaluation.
+
+        Args:
+            question: User question
+            include_sources: Whether to include sources in response
+
+        Returns:
+            Dictionary with answer, sources, and evaluation scores
+        """
+        logger.info(f"Processing query with evaluation: {question[:100]}...")
+
+        try:
+
+            result = await self.arun_with_sources(question)
+            answer = result["answer"]
+            sources = result["sources"]
+
+            contexts = [source["content"] for source in sources]
+
+            try:
+                evaluation = await self.evaluator.aevaluate(
+                    question= question,
+                    answer= answer,
+                    contexts= contexts
+                )
+                logger.info(
+                    f"Evaluation completed - "
+                    f"faithfulness={evaluation.get('faithfulness', 'N/A')}, "
+                    f"answer_relevancy={evaluation.get('answer_relevancy', 'N/A')}"
+                )
+            except Exception as e:
+                logger.warning(f"Evaluation failed: {e}", exc_info=True)
+                evaluation = {
+                    "faithfulness": None,
+                    "answer_relevancy": None,
+                    "evaluation_time_ms": None,
+                    "error": str(e),
+                }
+
+            return {"answer": answer, "sources": sources, "evaluation": evaluation}
+
+        except Exception as e:
+            logger.error(f"Error in query with evaluation: {e}")
+            raise
+
 
     
     def stream(self, query: str):
